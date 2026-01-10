@@ -1,23 +1,19 @@
-# Production stage  
-FROM node:18-alpine
-
+# Build stage
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
 
-# Install production dependencies only
-RUN npm install --production
-
-# Copy built application
-COPY dist ./dist
+# Production stage
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+COPY --from=builder /app/dist ./dist
 COPY public ./public
-
-# Expose port
+USER node
 EXPOSE 3000
-
-# Set NODE_ENV to production
-ENV NODE_ENV=production
-
-# Start the application
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]
