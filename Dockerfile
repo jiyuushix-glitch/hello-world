@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm ci
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm run build
+RUN npx tsc
 
 # Production stage
 FROM node:18-alpine
